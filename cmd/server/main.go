@@ -49,5 +49,7 @@ func main() {
 	e.Validator = &CustomValidator{validator: validator.New()}
 
 	e.POST("/signup", h.SignUp)
+	e.POST("/login", h.Login)
+
 	e.Logger.Fatal(e.Start(":8000"))
 }

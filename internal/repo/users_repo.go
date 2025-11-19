@@ -6,12 +6,12 @@ import (
 
 	"github.com/visualect/tl/internal/dto"
 	"github.com/visualect/tl/internal/models"
-	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 )
 
 type UsersRepository interface {
 	Create(ctx context.Context, data dto.RegisterUserRequest) error
+	GetUserByLogin(ctx context.Context, login string) (models.User, error)
 }
 
 type usersRepo struct {
@@ -23,14 +23,20 @@ func NewUsers(db *gorm.DB) UsersRepository {
 }
 
 func (u *usersRepo) Create(ctx context.Context, data dto.RegisterUserRequest) error {
-	hashed, err := bcrypt.GenerateFromPassword([]byte(data.Password), 10)
-	if err != nil {
-		return err
-	}
-
-	err = gorm.G[models.User](u.db).Create(ctx, &models.User{Login: data.Login, PasswordHash: string(hashed)})
+	err := gorm.G[models.User](u.db).Create(ctx, &models.User{Login: data.Login, PasswordHash: data.Password})
 	if errors.Is(err, gorm.ErrDuplicatedKey) {
-		return errors.New("user with this login name already exists")
+		return errors.New("User with this login name already exists")
 	}
 	return err
+}
+
+func (u *usersRepo) GetUserByLogin(ctx context.Context, login string) (models.User, error) {
+	user, err := gorm.G[models.User](u.db).Where("login = ?", login).First(ctx)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return models.User{}, errors.New("User is not registered")
+		}
+		return models.User{}, err
+	}
+	return user, nil
 }
