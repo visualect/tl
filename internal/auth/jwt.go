@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/labstack/echo/v4"
 )
 
 var Secret = []byte(os.Getenv("SECRET_KEY"))
@@ -37,4 +38,12 @@ func GenerateJWTToken(userID int) (string, error) {
 	}
 
 	return tokenString, nil
+}
+
+func GetUserID(c echo.Context) int {
+	user := c.Get("user").(*jwt.Token)
+	claims := user.Claims.(*Claims)
+	userID := claims.UserID
+
+	return userID
 }

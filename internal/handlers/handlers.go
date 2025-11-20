@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"net/http"
+	"strconv"
 
 	"github.com/labstack/echo/v4"
 	"github.com/visualect/tl/internal/auth"
@@ -72,6 +73,60 @@ func (t *tasksHandler) Login(c echo.Context) error {
 }
 
 func (t *tasksHandler) AddTask(c echo.Context) error {
-	test := struct{ message string }{message: "success"}
-	return c.JSON(http.StatusOK, test)
+	data := new(dto.AddTaskRequest)
+	if err := c.Bind(data); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
+
+	if err := c.Validate(data); err != nil {
+		return err
+	}
+
+	userID := auth.GetUserID(c)
+
+	err := t.tasksRepo.CreateTask(c.Request().Context(), userID, data.Task)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+	}
+
+	return c.JSON(http.StatusCreated, data)
+}
+
+func (t *tasksHandler) GetTasks(c echo.Context) error {
+	userID := auth.GetUserID(c)
+	tasks, err := t.tasksRepo.GetTasksByUserID(c.Request().Context(), userID)
+
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+	}
+
+	return c.JSON(http.StatusOK, tasks)
+}
+
+func (t *tasksHandler) CompleteTask(c echo.Context) error {
+	taskID, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
+	userID := auth.GetUserID(c)
+
+	err = t.tasksRepo.CompleteTaskByID(c.Request().Context(), taskID, userID)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
+	return c.NoContent(http.StatusOK)
+}
+
+func (t *tasksHandler) DeleteTask(c echo.Context) error {
+	taskID, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
+	userID := auth.GetUserID(c)
+
+	err = t.tasksRepo.DeleteTaskByID(c.Request().Context(), taskID, userID)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
+	return c.NoContent(http.StatusOK)
 }

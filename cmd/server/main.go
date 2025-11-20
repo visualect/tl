@@ -60,9 +60,13 @@ func main() {
 		},
 		SigningKey: auth.Secret,
 	}
+
 	authRequired := e.Group("")
 	authRequired.Use(echojwt.WithConfig(config))
+	authRequired.GET("/tasks", h.GetTasks)
 	authRequired.POST("/tasks", h.AddTask)
+	authRequired.PATCH("/tasks/:id", h.CompleteTask)
+	authRequired.DELETE("/tasks/:id", h.DeleteTask)
 
 	e.Logger.Fatal(e.Start(":8000"))
 }
