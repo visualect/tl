@@ -70,3 +70,8 @@ func (t *tasksHandler) Login(c echo.Context) error {
 	respBody := dto.LoginResponse{Token: token}
 	return c.JSON(http.StatusOK, respBody)
 }
+
+func (t *tasksHandler) AddTask(c echo.Context) error {
+	test := struct{ message string }{message: "success"}
+	return c.JSON(http.StatusOK, test)
+}

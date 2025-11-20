@@ -1,43 +1,40 @@
 package auth
 
 import (
-	"errors"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
 )
 
-var secret = []byte(os.Getenv("SECRET_KEY"))
+var Secret = []byte(os.Getenv("SECRET_KEY"))
+
+type Claims struct {
+	UserID int `json:"user_id"`
+	jwt.RegisteredClaims
+}
 
 func GenerateJWTToken(userID int) (string, error) {
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"user_id": userID,
-		"exp":     time.Now().Add(time.Hour * 3).Unix(),
-	})
+	expirationTime := time.Now().Add(time.Hour * 24)
 
-	tokenString, err := token.SignedString(secret)
+	claims := &Claims{
+		UserID: userID,
+		RegisteredClaims: jwt.RegisteredClaims{
+			ExpiresAt: jwt.NewNumericDate(expirationTime),
+			IssuedAt:  jwt.NewNumericDate(time.Now()),
+			NotBefore: jwt.NewNumericDate(time.Now()),
+			Issuer:    "tl",
+			Subject:   strconv.Itoa(userID),
+		},
+	}
+
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+
+	tokenString, err := token.SignedString(Secret)
 	if err != nil {
 		return "", err
 	}
 
 	return tokenString, nil
-}
-
-func ParseJWTToken(tokenString string) (string, error) {
-	claims := jwt.MapClaims{}
-	_, err := jwt.ParseWithClaims(tokenString, claims, func(t *jwt.Token) (any, error) {
-		return secret, nil
-	})
-
-	if err != nil {
-		return "", err
-	}
-
-	userID, ok := claims["user_id"].(string)
-	if !ok {
-		return "", errors.New("invalid token")
-	}
-
-	return userID, nil
 }

@@ -6,9 +6,12 @@ import (
 	"os"
 
 	"github.com/go-playground/validator/v10"
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/joho/godotenv"
+	echojwt "github.com/labstack/echo-jwt/v4"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
+	"github.com/visualect/tl/internal/auth"
 	"github.com/visualect/tl/internal/handlers"
 	"github.com/visualect/tl/internal/repo"
 	"gorm.io/driver/postgres"
@@ -50,6 +53,16 @@ func main() {
 
 	e.POST("/signup", h.SignUp)
 	e.POST("/login", h.Login)
+
+	config := echojwt.Config{
+		NewClaimsFunc: func(c echo.Context) jwt.Claims {
+			return new(auth.Claims)
+		},
+		SigningKey: auth.Secret,
+	}
+	authRequired := e.Group("")
+	authRequired.Use(echojwt.WithConfig(config))
+	authRequired.POST("/tasks", h.AddTask)
 
 	e.Logger.Fatal(e.Start(":8000"))
 }
