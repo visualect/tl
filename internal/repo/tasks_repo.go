@@ -11,7 +11,7 @@ import (
 type TasksRepository interface {
 	CreateTask(ctx context.Context, userID int, task string) error
 	GetTasksByUserID(ctx context.Context, userID int) ([]models.Task, error)
-	CompleteTaskByID(ctx context.Context, taskID int, userID int) error
+	ToggleCompleteTaskByID(ctx context.Context, taskID int, userID int) error
 	DeleteTaskByID(ctx context.Context, taskID int, userID int) error
 }
 
@@ -33,10 +33,10 @@ func (t *tasksRepo) GetTasksByUserID(ctx context.Context, userID int) ([]models.
 	return tasks, err
 }
 
-func (t *tasksRepo) CompleteTaskByID(ctx context.Context, taskID int, userID int) error {
-	rows, err := gorm.G[models.Task](t.db).Where("id = ? AND user_id = ?", taskID, userID).Update(ctx, "completed", true)
+func (t *tasksRepo) ToggleCompleteTaskByID(ctx context.Context, taskID int, userID int) error {
+	rows, err := gorm.G[models.Task](t.db).Where("id = ? AND user_id = ?", taskID, userID).Update(ctx, "completed", gorm.Expr("CASE WHEN completed = true THEN false ELSE true END"))
 	if rows == 0 {
-		return errors.New("unable to delete task")
+		return errors.New("unable to complete task")
 	}
 	return err
 }

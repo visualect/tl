@@ -9,11 +9,11 @@ type User struct {
 }
 
 type Task struct {
-	ID          int        `json:"id" gorm:"primaryKey"`
-	UserID      int        `json:"user_id"`
-	Task        string     `json:"task"`
-	Completed   bool       `json:"completed" gorm:"default:false"`
-	CreatedAt   time.Time  `json:"created_at" gorm:"default:now()"`
-	CompletedAt *time.Time `json:"completed_at"` // nullable
-	User        User       `gorm:"foreignKey:UserID;constraint:OnDelete:CASCADE" json:"-"`
+	ID        int        `json:"id" gorm:"primaryKey"`
+	UserID    int        `json:"user_id"`
+	Task      string     `json:"task"`
+	Completed bool       `json:"completed" gorm:"default:false"`
+	CreatedAt time.Time  `json:"created_at" gorm:"default:now()"`
+	UpdatedAt *time.Time `json:"updated_at"`
+	User      User       `gorm:"foreignKey:UserID;constraint:OnDelete:CASCADE" json:"-"`
 }
