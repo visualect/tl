@@ -2,7 +2,6 @@ package main
 
 import (
 	"log"
-	"net/http"
 	"os"
 
 	"github.com/go-playground/validator/v10"
@@ -17,17 +16,6 @@ import (
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
-
-type CustomValidator struct {
-	validator *validator.Validate
-}
-
-func (cv *CustomValidator) Validate(i any) error {
-	if err := cv.validator.Struct(i); err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
-	}
-	return nil
-}
 
 func main() {
 	err := godotenv.Load()
@@ -49,7 +37,7 @@ func main() {
 
 	e := echo.New()
 	e.Use(middleware.Logger())
-	e.Validator = &CustomValidator{validator: validator.New()}
+	e.Validator = &handlers.CustomValidator{Validator: validator.New()}
 
 	e.POST("/signup", h.SignUp)
 	e.POST("/login", h.Login)
@@ -63,9 +51,10 @@ func main() {
 
 	authRequired := e.Group("")
 	authRequired.Use(echojwt.WithConfig(config))
+
 	authRequired.GET("/tasks", h.GetTasks)
 	authRequired.POST("/tasks", h.AddTask)
-	authRequired.PATCH("/tasks/:id", h.CompleteTask)
+	authRequired.PATCH("/tasks/:id", h.ToggleCompleteTask)
 	authRequired.DELETE("/tasks/:id", h.DeleteTask)
 
 	e.Logger.Fatal(e.Start(":8000"))
