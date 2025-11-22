@@ -45,7 +45,7 @@ func (t *tasksHandler) SignUp(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
 
-	return c.JSON(http.StatusCreated, data)
+	return c.JSON(http.StatusCreated, dto.RegisterResponse{Login: data.Login})
 }
 
 func (t *tasksHandler) Login(c echo.Context) error {
