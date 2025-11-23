@@ -7,6 +7,7 @@ import (
 	"errors"
 	"io"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/visualect/tl/internal/dto"
@@ -24,12 +25,12 @@ func AddTask(task string) ([]byte, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	req, err := http.NewRequestWithContext(ctx, "POST", backendURL+"/tasks", &b)
+	req, err := http.NewRequestWithContext(ctx, "POST", os.Getenv("BACKEND_URL")+"/tasks", &b)
 	if err != nil {
 		return nil, err
 	}
 
-	token, err := GetToken(AuthFilename)
+	token, err := GetToken(os.Getenv("AUTH_FILENAME"))
 	if err != nil {
 		return nil, err
 	}

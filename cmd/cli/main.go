@@ -25,6 +25,7 @@ func main() {
 	loginPtr := flag.String("login", "", "log in into account")
 	signUpPtr := flag.String("signup", "", "sign up an account")
 	logOutPtr := flag.Bool("logout", false, "log out from an account")
+	infoPtr := flag.Bool("info", false, "print current logged in user")
 
 	addPtr := flag.Bool("add", false, "add task")
 	listPtr := flag.Bool("list", false, "list all tasks")
@@ -33,9 +34,11 @@ func main() {
 
 	flag.Parse()
 
+	authFilename := os.Getenv("AUTH_FILENAME")
+
 	switch {
 	case len(*loginPtr) > 0:
-		if _, ok := client.IsFileExists(client.AuthFilename); ok {
+		if _, ok := client.IsFileExists(authFilename); ok {
 			fmt.Println("you are currently logged in")
 			return
 		}
@@ -51,13 +54,13 @@ func main() {
 			log.Fatal(err)
 		}
 
-		err = client.SaveFile(client.AuthFilename, data)
+		err = client.SaveFile(authFilename, data)
 		if err != nil {
 			log.Fatal("failed to save token to local file")
 		}
 		fmt.Println("login success")
 	case len(*signUpPtr) > 0:
-		if _, ok := client.IsFileExists(client.AuthFilename); ok {
+		if _, ok := client.IsFileExists(authFilename); ok {
 			fmt.Println("you are currently logged in")
 			return
 		}
@@ -87,18 +90,35 @@ func main() {
 		err = json.NewDecoder(bytes.NewReader(l)).Decode(&resJSON)
 		fmt.Printf("user %s successfully signed up\n", resJSON.Login)
 	case *logOutPtr:
-		if _, ok := client.IsFileExists(client.AuthFilename); !ok {
+		if _, ok := client.IsFileExists(authFilename); !ok {
 			fmt.Println("you are already logged out")
 			return
 		}
-		err := client.DeleteFile(client.AuthFilename)
+		err := client.DeleteFile(authFilename)
 		if err != nil {
 			log.Fatal(err)
 		}
 		fmt.Println("you are logged out")
+	case *infoPtr:
+		if _, ok := client.IsFileExists(authFilename); !ok {
+			fmt.Println("you need to log in first")
+			return
+		}
+		data, err := client.GetUser()
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		var u dto.UserResponse
+		err = json.NewDecoder(bytes.NewReader(data)).Decode(&u)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		fmt.Printf("you are logged in as %s\n", u.Login)
 	case *addPtr:
-		if _, ok := client.IsFileExists(client.AuthFilename); !ok {
-			fmt.Println("please, log in first")
+		if _, ok := client.IsFileExists(authFilename); !ok {
+			fmt.Println("you need to log in first")
 			return
 		}
 		newTask := strings.Join(flag.Args(), " ")
@@ -110,7 +130,7 @@ func main() {
 		err = json.NewDecoder(bytes.NewReader(data)).Decode(&t)
 		fmt.Printf("task '%s' added\n", t.Task)
 	case *listPtr:
-		if _, ok := client.IsFileExists(client.AuthFilename); !ok {
+		if _, ok := client.IsFileExists(authFilename); !ok {
 			fmt.Println("please, log in first")
 			return
 		}
@@ -131,7 +151,7 @@ func main() {
 		}
 
 		c := map[bool]string{
-			true:  "[x]",
+			true:  "[X]",
 			false: "[ ]",
 		}
 
@@ -140,7 +160,7 @@ func main() {
 			fmt.Printf("%s\t%d. %s\n", c[task.Completed], task.ID, task.Task)
 		}
 	case len(*completePtr) > 0:
-		if _, ok := client.IsFileExists(client.AuthFilename); !ok {
+		if _, ok := client.IsFileExists(authFilename); !ok {
 			fmt.Println("please, log in first")
 			return
 		}
@@ -152,7 +172,7 @@ func main() {
 
 		fmt.Println("toggle complete success")
 	case len(*deletePtr) > 0:
-		if _, ok := client.IsFileExists(client.AuthFilename); !ok {
+		if _, ok := client.IsFileExists(authFilename); !ok {
 			fmt.Println("please, log in first")
 			return
 		}

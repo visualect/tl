@@ -9,11 +9,11 @@ import (
 	"time"
 )
 
-func GetTasks() ([]byte, error) {
+func GetUser() ([]byte, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	req, err := http.NewRequestWithContext(ctx, "GET", os.Getenv("BACKEND_URL")+"/tasks", nil)
+	req, err := http.NewRequestWithContext(ctx, "GET", os.Getenv("BACKEND_URL")+"/me", nil)
 	if err != nil {
 		return nil, err
 	}

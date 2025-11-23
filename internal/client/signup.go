@@ -7,6 +7,7 @@ import (
 	"errors"
 	"io"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/visualect/tl/internal/dto"
@@ -24,7 +25,7 @@ func SignUp(login string, password string) ([]byte, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	req, err := http.NewRequestWithContext(ctx, "POST", backendURL+"/signup", &b)
+	req, err := http.NewRequestWithContext(ctx, "POST", os.Getenv("BACKEND_URL")+"/signup", &b)
 	if err != nil {
 		return nil, err
 	}

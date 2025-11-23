@@ -10,11 +10,6 @@ import (
 	"github.com/visualect/tl/internal/dto"
 )
 
-var (
-	backendURL   = "http://localhost:8000"
-	AuthFilename = ".auth.json"
-)
-
 func SaveFile(filename string, data []byte) error {
 	return os.WriteFile(filename, data, 0600)
 }

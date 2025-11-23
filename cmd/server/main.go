@@ -52,6 +52,7 @@ func main() {
 	authRequired := e.Group("")
 	authRequired.Use(echojwt.WithConfig(config))
 
+	authRequired.GET("/me", h.GetUser)
 	authRequired.GET("/tasks", h.GetTasks)
 	authRequired.POST("/tasks", h.AddTask)
 	authRequired.PATCH("/tasks/:id", h.ToggleCompleteTask)

@@ -5,6 +5,7 @@ import (
 	"errors"
 	"io"
 	"net/http"
+	"os"
 	"time"
 )
 
@@ -12,12 +13,12 @@ func DeleteTask(id string) ([]byte, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	req, err := http.NewRequestWithContext(ctx, "DELETE", backendURL+"/tasks/"+id, nil)
+	req, err := http.NewRequestWithContext(ctx, "DELETE", os.Getenv("BACKEND_URL")+"/tasks/"+id, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	token, err := GetToken(AuthFilename)
+	token, err := GetToken(os.Getenv("AUTH_FILENAME"))
 	if err != nil {
 		return nil, err
 	}

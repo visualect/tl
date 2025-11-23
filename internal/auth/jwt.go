@@ -11,16 +11,23 @@ import (
 
 var Secret = []byte(os.Getenv("SECRET_KEY"))
 
+type PrivateClaims struct {
+	UserID int    `json:"user_id"`
+	Login  string `json:"login"`
+}
 type Claims struct {
-	UserID int `json:"user_id"`
+	PrivateClaims
 	jwt.RegisteredClaims
 }
 
-func GenerateJWTToken(userID int) (string, error) {
+func GenerateJWTToken(userID int, login string) (string, error) {
 	expirationTime := time.Now().Add(time.Hour * 24)
 
 	claims := &Claims{
-		UserID: userID,
+		PrivateClaims: PrivateClaims{
+			UserID: userID,
+			Login:  login,
+		},
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(expirationTime),
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
@@ -40,10 +47,13 @@ func GenerateJWTToken(userID int) (string, error) {
 	return tokenString, nil
 }
 
-func GetUserID(c echo.Context) int {
+func GetPrivateClaims(c echo.Context) PrivateClaims {
 	user := c.Get("user").(*jwt.Token)
 	claims := user.Claims.(*Claims)
-	userID := claims.UserID
+	p := PrivateClaims{
+		UserID: claims.UserID,
+		Login:  claims.Login,
+	}
 
-	return userID
+	return p
 }

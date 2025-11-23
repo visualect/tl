@@ -71,13 +71,23 @@ func (t *tasksHandler) Login(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusUnauthorized, "authenticaton failed. password is incorrect")
 	}
 
-	token, err := auth.GenerateJWTToken(user.ID)
+	token, err := auth.GenerateJWTToken(user.ID, user.Login)
 	if err != nil {
 		echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
 
 	respBody := dto.LoginResponse{Token: token}
 	return c.JSON(http.StatusOK, respBody)
+}
+
+func (t *tasksHandler) GetUser(c echo.Context) error {
+	pc := auth.GetPrivateClaims(c)
+	u, err := t.usersRepo.GetUserByLogin(c.Request().Context(), pc.Login)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusUnauthorized, err.Error())
+	}
+	user := dto.UserResponse{Login: u.Login}
+	return c.JSON(http.StatusOK, user)
 }
 
 func (t *tasksHandler) AddTask(c echo.Context) error {
@@ -90,9 +100,9 @@ func (t *tasksHandler) AddTask(c echo.Context) error {
 		return err
 	}
 
-	userID := auth.GetUserID(c)
+	pc := auth.GetPrivateClaims(c)
 
-	err := t.tasksRepo.CreateTask(c.Request().Context(), userID, data.Task)
+	err := t.tasksRepo.CreateTask(c.Request().Context(), pc.UserID, data.Task)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
@@ -101,9 +111,9 @@ func (t *tasksHandler) AddTask(c echo.Context) error {
 }
 
 func (t *tasksHandler) GetTasks(c echo.Context) error {
-	userID := auth.GetUserID(c)
+	pc := auth.GetPrivateClaims(c)
 
-	tasks, err := t.tasksRepo.GetTasksByUserID(c.Request().Context(), userID)
+	tasks, err := t.tasksRepo.GetTasksByUserID(c.Request().Context(), pc.UserID)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return echo.NewHTTPError(http.StatusBadRequest, "user not found")
@@ -119,9 +129,9 @@ func (t *tasksHandler) ToggleCompleteTask(c echo.Context) error {
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
-	userID := auth.GetUserID(c)
+	pc := auth.GetPrivateClaims(c)
 
-	err = t.tasksRepo.ToggleCompleteTaskByID(c.Request().Context(), taskID, userID)
+	err = t.tasksRepo.ToggleCompleteTaskByID(c.Request().Context(), taskID, pc.UserID)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
@@ -133,9 +143,9 @@ func (t *tasksHandler) DeleteTask(c echo.Context) error {
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
-	userID := auth.GetUserID(c)
+	pc := auth.GetPrivateClaims(c)
 
-	err = t.tasksRepo.DeleteTaskByID(c.Request().Context(), taskID, userID)
+	err = t.tasksRepo.DeleteTaskByID(c.Request().Context(), taskID, pc.UserID)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
