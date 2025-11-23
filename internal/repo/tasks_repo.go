@@ -29,7 +29,7 @@ func (t *tasksRepo) CreateTask(ctx context.Context, userID int, task string) err
 }
 
 func (t *tasksRepo) GetTasksByUserID(ctx context.Context, userID int) ([]models.Task, error) {
-	tasks, err := gorm.G[models.Task](t.db).Where("user_id = ?", userID).Find(ctx)
+	tasks, err := gorm.G[models.Task](t.db).Where("user_id = ?", userID).Order("created_at DESC").Find(ctx)
 	return tasks, err
 }
 

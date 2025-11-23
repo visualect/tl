@@ -12,7 +12,6 @@ import (
 	"github.com/joho/godotenv"
 	"github.com/visualect/tl/internal/client"
 	"github.com/visualect/tl/internal/dto"
-	"github.com/visualect/tl/internal/models"
 	"golang.org/x/term"
 )
 
@@ -25,12 +24,12 @@ func main() {
 	loginPtr := flag.String("login", "", "log in into account")
 	signUpPtr := flag.String("signup", "", "sign up an account")
 	logOutPtr := flag.Bool("logout", false, "log out from an account")
-	infoPtr := flag.Bool("info", false, "print current logged in user")
+	mePtr := flag.Bool("me", false, "print current logged in user")
 
 	addPtr := flag.Bool("add", false, "add task")
 	listPtr := flag.Bool("list", false, "list all tasks")
-	completePtr := flag.String("toggle", "", "toggle completion toggle")
-	deletePtr := flag.String("delete", "", "delete item")
+	completePtr := flag.Int("toggle", 0, "toggle completion toggle")
+	deletePtr := flag.Int("delete", 0, "delete item")
 
 	flag.Parse()
 
@@ -86,9 +85,7 @@ func main() {
 			log.Fatal(err)
 		}
 
-		var resJSON dto.RegisterResponse
-		err = json.NewDecoder(bytes.NewReader(l)).Decode(&resJSON)
-		fmt.Printf("user %s successfully signed up\n", resJSON.Login)
+		fmt.Printf("user %s successfully signed up\n", l)
 	case *logOutPtr:
 		if _, ok := client.IsFileExists(authFilename); !ok {
 			fmt.Println("you are already logged out")
@@ -99,18 +96,12 @@ func main() {
 			log.Fatal(err)
 		}
 		fmt.Println("you are logged out")
-	case *infoPtr:
+	case *mePtr:
 		if _, ok := client.IsFileExists(authFilename); !ok {
 			fmt.Println("you need to log in first")
 			return
 		}
-		data, err := client.GetUser()
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		var u dto.UserResponse
-		err = json.NewDecoder(bytes.NewReader(data)).Decode(&u)
+		u, err := client.GetUser()
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -135,18 +126,12 @@ func main() {
 			return
 		}
 
-		data, err := client.GetTasks()
+		tasks, err := client.GetTasks()
 		if err != nil {
 			log.Fatal(err)
 		}
 
-		var list []models.Task
-		err = json.NewDecoder(bytes.NewReader(data)).Decode(&list)
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		if len(list) == 0 {
+		if len(tasks) == 0 {
 			fmt.Println("you list is empty")
 		}
 
@@ -155,29 +140,30 @@ func main() {
 			false: "[ ]",
 		}
 
-		// TODO: change to show index + 1
-		for _, task := range list {
-			fmt.Printf("%s\t%d. %s\n", c[task.Completed], task.ID, task.Task)
+		fmt.Println()
+		for i, t := range tasks {
+			fmt.Printf("%s\t%d. %s\n", c[t.Completed], i+1, t.Task)
 		}
-	case len(*completePtr) > 0:
+		fmt.Println()
+	case *completePtr > 0:
 		if _, ok := client.IsFileExists(authFilename); !ok {
 			fmt.Println("please, log in first")
 			return
 		}
 
-		_, err := client.ToggleCompleteTask(*completePtr)
+		err := client.ToggleCompleteTask(*completePtr)
 		if err != nil {
 			log.Fatal(err)
 		}
 
 		fmt.Println("toggle complete success")
-	case len(*deletePtr) > 0:
+	case *deletePtr > 0:
 		if _, ok := client.IsFileExists(authFilename); !ok {
 			fmt.Println("please, log in first")
 			return
 		}
 
-		_, err := client.DeleteTask(*deletePtr)
+		err := client.DeleteTask(*deletePtr)
 		if err != nil {
 			log.Fatal(err)
 		}

@@ -1,15 +1,19 @@
 package client
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
 	"errors"
 	"io"
 	"net/http"
 	"os"
 	"time"
+
+	"github.com/visualect/tl/internal/models"
 )
 
-func GetTasks() ([]byte, error) {
+func GetTasks() ([]models.Task, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
@@ -40,5 +44,11 @@ func GetTasks() ([]byte, error) {
 		return nil, errors.New(msg)
 	}
 
-	return data, nil
+	var list []models.Task
+	err = json.NewDecoder(bytes.NewReader(data)).Decode(&list)
+	if err != nil {
+		return nil, err
+	}
+
+	return list, nil
 }
