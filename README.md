@@ -92,7 +92,7 @@ Delete images:
 `docker rmi tl-backend postgres`
 
 Delete volumes:
-`docker volume rm tl_tasks `
+`docker volume rm tl_tasks`
 
  
  
