@@ -8,6 +8,7 @@ It uses *postgresql*, *gorm*, *echo* and *goose* for migrations.
 ```shell
 git clone https://github.com/visualect/tl
 cd tl
+cp .env.example .env 
 docker compose up -d && go build -o tl cmd/cli/main.go && ./tl -help
 ```
 
