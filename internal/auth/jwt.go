@@ -21,7 +21,7 @@ type Claims struct {
 }
 
 func GenerateJWTToken(userID int, login string) (string, error) {
-	expirationTime := time.Now().Add(time.Hour * 24)
+	expirationTime := time.Now().Add(time.Hour * 3)
 
 	claims := &Claims{
 		PrivateClaims: PrivateClaims{
