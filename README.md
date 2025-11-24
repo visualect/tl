@@ -6,7 +6,7 @@ It uses *postgresql*, *gorm*, *echo* and *goose* for migrations.
 ## Run with docker compose
 
 ```shell
-git clone https://github.com/visualect/tl .
+git clone https://github.com/visualect/tl
 cd tl
 docker compose up -d && go build -o tl cmd/cli/main.go && ./tl -help
 ```
