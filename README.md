@@ -1,7 +1,7 @@
 # tl (tasks list)
 
-*tl* is simple pet-project for managing tasks with CLI client.
-It uses *postgresql*, *gorm*, *echo* and *goose* for migrations.
+*tl* is simple pet-project to demonstrate REST API and CLI knowledge.
+It uses *postgresql*, *gorm*, *echo*, *standard library* and *goose* for migrations.
 
 ## Run with docker compose
 
@@ -52,6 +52,7 @@ docker compose up -d && go build -o tl cmd/cli/main.go && ./tl -help
  #  add task
  ./tl -add try this application
  task 'try this application' added
+
  ./tl -add make this task complete
  task 'make this task complete' added
  
@@ -64,6 +65,7 @@ docker compose up -d && go build -o tl cmd/cli/main.go && ./tl -help
  #  toggle complete
  ./tl -toggle 2
  toggle success
+
  ./tl -list
  
  [ ]    1. try this application
@@ -73,6 +75,7 @@ docker compose up -d && go build -o tl cmd/cli/main.go && ./tl -help
  #  delete task
  ./tl -delete 2
  task deleted
+
  ./tl -list
  
  [ ]    1. try this application

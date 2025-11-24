@@ -23,12 +23,5 @@ services:
     depends_on:
       db:
         condition: service_healthy
-
-  # migrate:
-  #   build: .
-  #   command: goose up
-  #   depends_on:
-  #     backend:
-  #       condition: service_started
 volumes:
   tasks:
