@@ -132,7 +132,8 @@ func main() {
 		}
 
 		if len(tasks) == 0 {
-			fmt.Println("you list is empty")
+			fmt.Println("your list is empty")
+			return
 		}
 
 		c := map[bool]string{
@@ -156,7 +157,7 @@ func main() {
 			log.Fatal(err)
 		}
 
-		fmt.Println("toggle complete success")
+		fmt.Println("toggle success")
 	case *deletePtr > 0:
 		if _, ok := client.IsFileExists(authFilename); !ok {
 			fmt.Println("please, log in first")
